@@ -56,10 +56,13 @@ app.post('/upload', async (req, res) => {
     }
 });
 
-// Serve frontend
-app.use(express.static(path.join(__dirname, '../frontend')));
+// Serve index.html from the same folder as this script
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html')); // Serving index.html from the current directory
+});
 
 // Start server
-app.listen(3000, () => {
-    console.log("Server running on http://localhost:3000");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
 });
