@@ -1,0 +1,4 @@
+express
+@aws-sdk/client-s3
+body-parser
+dotenv
