@@ -1,0 +1,13 @@
+version: 1
+
+services:
+  - type: web
+    name: filtercamera
+    env: javascript
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: node server.js
+    autoDeploy: true
+    region: Singapore (Southeast Asia)  # or another available region
+    instances: 1
+    healthCheckPath: /  # Path to check health
