@@ -26,7 +26,9 @@ const uploadImageToS3 = async (buffer, fileName) => {
     };
     
     try {
+        console.log("Uploading to S3 with params:", params);
         const data = await s3Client.send(new PutObjectCommand(params));
+        console.log("S3 Upload successful:", data);
         const fileUrl = `https://${params.Bucket}.s3.${s3Client.config.region}.amazonaws.com/${params.Key}`;
         return fileUrl;
     } catch (err) {
