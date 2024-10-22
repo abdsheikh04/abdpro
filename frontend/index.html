@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Filter Capture</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #2c003e; /* Initial dark purple */
+            animation: bgColorChange 20s infinite;
+            transition: background-color 0.5s;
+        }
+
+        @keyframes bgColorChange {
+            0% { background-color: #2c003e; }
+            50% { background-color: #000000; }
+            100% { background-color: #2c003e; }
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #ffffff;
+            font-weight: 300;
+            letter-spacing: 1.5px;
+        }
+
+        /* Card Design */
+        .card {
+            width: 90%;
+            max-width: 700px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        #camera {
+            width: 100%;
+            max-width: 600px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            transition: filter 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        #capture-btn {
+            padding: 12px 24px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 18px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        #capture-btn:hover {
+            background-color: #45a049;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        #filter-select {
+            padding: 12px;
+            margin-top: 15px;
+            font-size: 16px;
+            border-radius: 6px;
+            border: none;
+            background-color: #ffffff;
+            color: #282c34;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        /* Day/Night Mode Toggle */
+        .toggle-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 11;
+        }
+
+
+        #dark-mode-toggle {
+            padding: 10px;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            
+        }
+
+        #dark-mode-icon {
+            font-size: 30px;
+            color: #fff;
+        }
+
+        canvas {
+            display: none;
+        }
+
+        /* Background Blocks and Bubbles */
+        .animation-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .block {
+            position: absolute;
+            top: -100px;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            animation: fallBlock 8s infinite linear;
+            border-radius: 4px;
+        }
+
+        @keyframes fallBlock {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+            100% {
+                transform: translateY(1100px) rotate(360deg);
+            }
+        }
+
+        .block:nth-child(1) { left: 5%; animation-duration: 9s; }
+        .block:nth-child(2) { left: 15%; animation-duration: 7s; }
+        .block:nth-child(3) { left: 25%; animation-duration: 8s; }
+        .block:nth-child(4) { left: 35%; animation-duration: 6s; }
+        .block:nth-child(5) { left: 45%; animation-duration: 9s; }
+        .block:nth-child(6) { left: 55%; animation-duration: 10s; }
+        .block:nth-child(7) { left: 65%; animation-duration: 7s; }
+        .block:nth-child(8) { left: 75%; animation-duration: 8s; }
+        .block:nth-child(9) { left: 85%; animation-duration: 10s; }
+        .block:nth-child(10) { left: 95%; animation-duration: 9s; }
+
+        /* Bubbles */
+        .bubble {
+            position: absolute;
+            bottom: -150px;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: bubbleRise 10s infinite ease-in-out;
+        }
+
+        @keyframes bubbleRise {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-1100px) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .bubble:nth-child(1) { left: 10%; animation-duration: 9s; }
+        .bubble:nth-child(2) { left: 20%; animation-duration: 11s; }
+        .bubble:nth-child(3) { left: 30%; animation-duration: 8s; }
+        .bubble:nth-child(4) { left: 40%; animation-duration: 12s; }
+        .bubble:nth-child(5) { left: 50%; animation-duration: 10s; }
+        .bubble:nth-child(6) { left: 60%; animation-duration: 9s; }
+        .bubble:nth-child(7) { left: 70%; animation-duration: 11s; }
+        .bubble:nth-child(8) { left: 80%; animation-duration: 8s; }
+        .bubble:nth-child(9) { left: 90%; animation-duration: 12s; }
+    </style>
+</head>
+<body>
+
+    <!-- Animated Background Layers -->
+    <div class="animation-layer">
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+    </div>
+    
+    <div class="animation-layer">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+    </div>
+
+    <!-- Card with Camera Feed and Filter Options -->
+    <div class="card">
+        <h1>Camera Capture with Filter</h1>
+        <video id="camera" autoplay></video>
+
+        <select id="filter-select">
+            <option value="none">No Filter</option>
+            <option value="grayscale(100%)">Grayscale</option>
+            <option value="sepia(50%)">Sepia</option>
+            <option value="invert(100%)">Invert</option>
+            <option value="blur(5px)">Blur</option>
+            <option value="contrast(200%)">High Contrast</option>
+            <option value="brightness(150%)">Brightness</option>
+            <option value="hue-rotate(90deg)">Hue Rotate</option>
+            <option value="saturate(200%)">Saturate</option>
+        </select>
+
+        <button id="capture-btn">Capture Image</button>
+        <canvas id="canvas"></canvas>
+    </div>
+
+      <!-- Toggle for Dark/Night Mode -->
+      <div class="toggle-container">
+        <button id="dark-mode-toggle"><span id="dark-mode-icon">🌙</span></button>
+    </div>
+
+
+    <script>
+        const video = document.getElementById('camera');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+        const filterSelect = document.getElementById('filter-select');
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        const darkModeIcon = document.getElementById('dark-mode-icon');
+        let isDarkMode = true;
+
+        // Access camera
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(error => {
+                console.error("Error accessing the camera:", error);
+            });
+
+        // Change filter when selected
+        filterSelect.addEventListener('change', (event) => {
+            video.style.filter = event.target.value;
+        });
+
+        // Capture the image from the video stream
+        document.getElementById('capture-btn').addEventListener('click', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.filter = video.style.filter;  // Apply current filter to canvas
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Convert canvas image to base64
+            const imageData = canvas.toDataURL('image/png');
+
+            // Send the image to the server
+            fetch('http://localhost:3000/upload', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ image: imageData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Image uploaded successfully:", data);
+            })
+            .catch(error => {
+                console.error("Error uploading the image:", error);
+            });
+        });
+// Toggle dark mode
+darkModeToggle.addEventListener('click', () => {
+    isDarkMode = !isDarkMode;
+    if (isDarkMode) {
+        // Night mode
+        document.body.style.backgroundColor = "#2c003e";
+        document.body.style.color = "#ffffff";
+        darkModeIcon.textContent = "🌙";
+
+        // Change video filter (night filter settings)
+        video.style.filter = "none";  // Reset to default night filter or any custom night filter you want
+
+        // Additional color or theme changes for night mode
+    } else {
+        // Day mode
+        document.body.style.backgroundColor = "#ffffff";
+        document.body.style.color = "#000000";
+        darkModeIcon.textContent = "☀️";
+
+        // Change video filter (day filter settings)
+        video.style.filter = "contrast(150%) saturate(120%)";  // For example, brighten the day mode look
+
+        // Additional color or theme changes for day mode
+    }
+});
+
+        
+    </script>
+</body>
+</html>
